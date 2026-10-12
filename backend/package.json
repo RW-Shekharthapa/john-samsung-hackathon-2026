@@ -1,1 +1,13 @@
-{ "name": "john-samsung-hackathon-2026-api", "version": "1.0.0", "private": true, "scripts": { "start": "node server.js" }, "dependencies": { "express": "^5", "mysql2": "^3" } }
+{
+  "name": "john-samsung-hackathon-2026-api",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "express": "^5",
+    "mysql2": "^3"
+  }
+}

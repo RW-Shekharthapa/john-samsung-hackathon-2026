@@ -1,6 +1,7 @@
 const express = require('express');
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
+const { hashPassword, verifyPassword, str, isUrl, validateArticle } = require('./lib');
 
 const app = express();
 app.use(express.json({ limit: '100kb' }));
@@ -10,20 +11,10 @@ const NEWS_API = 'https://api.spaceflightnewsapi.net/v4/articles/';
 const SESSION_DAYS = 7;
 
 // ---------- helpers ----------
-const hashPassword = (pw, salt = crypto.randomBytes(16).toString('hex')) =>
-  `${salt}:${crypto.scryptSync(pw, salt, 64).toString('hex')}`;
-const verifyPassword = (pw, stored) => {
-  const [salt, hash] = stored.split(':');
-  const test = crypto.scryptSync(pw, salt, 64);
-  const orig = Buffer.from(hash, 'hex');
-  return orig.length === test.length && crypto.timingSafeEqual(orig, test);
-};
 const wrap = (fn) => (req, res) => fn(req, res).catch((e) => {
   console.error(e);
   res.status(500).json({ error: 'Internal server error' });
 });
-const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
-const isUrl = (v) => { try { return ['http:', 'https:'].includes(new URL(v).protocol); } catch { return false; } };
 
 async function createSession(userId) {
   const token = crypto.randomBytes(32).toString('hex');
@@ -156,20 +147,6 @@ const toDto = (r) => ({
   source: r.source, externalId: r.external_id, publishedAt: r.published_at,
   createdAt: r.created_at, updatedAt: r.updated_at,
 });
-
-function validateArticle(b) {
-  const a = {
-    title: str(b.title, 300),
-    summary: str(b.summary, 5000),
-    url: str(b.url, 1000),
-    imageUrl: str(b.imageUrl, 1000),
-    source: str(b.source, 120),
-  };
-  if (!a.title) return { error: 'Title is required' };
-  if (a.url && !isUrl(a.url)) return { error: 'Link must be a valid http(s) URL' };
-  if (a.imageUrl && !isUrl(a.imageUrl)) return { error: 'Image must be a valid http(s) URL' };
-  return { value: a };
-}
 
 app.get('/api/articles', auth, wrap(async (req, res) => {
   const search = str(req.query.search, 100);
