@@ -7,7 +7,7 @@ import FeedView from './components/FeedView.vue'
 import MyArticlesView from './components/MyArticlesView.vue'
 
 const user = ref(null)
-const view = ref('landing') // landing | login | register | feed | mine
+const view = ref('landing') // landing | login | register | feeds | mine
 const ready = ref(false)
 const toast = ref('')
 let toastTimer
